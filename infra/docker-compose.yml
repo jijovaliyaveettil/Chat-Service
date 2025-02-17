@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres:         # Relational database for structured data
+    image: postgres:15  # Official PostgreSQL image
+    volumes:
+      - pg_data:/var/lib/postgresql/data  # Persistent storage
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword  # Default creds
+    networks:
+      - mynet  # Custom network for cross-service communication
+
+  mongodb:          # NoSQL database for flexible data
+    image: mongo:6
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mynet
+
+  redis:            # In-memory cache/queue
+    image: redis:7
+    networks:
+      - mynet
+
+volumes:
+  pg_data:    # Named volume declaration
+  mongo_data: 
+
+networks:
+  mynet:      # Internal bridge network
+    driver: bridge
