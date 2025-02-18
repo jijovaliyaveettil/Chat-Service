@@ -1,0 +1,42 @@
+# version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: chat_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: chatdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:latest
+    container_name: chat_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  adminer: # Optional: Web UI for PostgreSQL
+    image: adminer
+    restart: always
+    ports:
+      - "8081:8080"
+
+  mongo-express: # Optional: Web UI for MongoDB
+    image: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_SERVER: chat_mongo
+    ports:
+      - "8082:8081"
+
+volumes:
+  postgres_data:
+  mongo_data:
