@@ -3,21 +3,19 @@ package main
 import (
 	"fmt"
 
+	"chat-service/endpoints"
+
 	"github.com/gin-gonic/gin"
 )
 
-func getData(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "Hello, World!",
-	})
-}
+var version = "1.0.0"
 
 func main() {
-	fmt.Println("Hello, World!")
+	fmt.Println("Starting Server ........")
 
 	server := gin.Default()
 
-	server.GET("/", getData)
+	endpoints.AddUserRoutes(server, version)
 
 	server.Run(":8080")
 
