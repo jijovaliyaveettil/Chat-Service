@@ -61,3 +61,15 @@ Implement audit logging to MongoDB
 
 
 GITHUB ACTIONS
+
+
+
+System Architecture
+
+Tech Stack
+	•	Backend: Go (Gorilla WebSockets, PostgreSQL driver, MongoDB driver)
+	•	Database: PostgreSQL (Users, Friendships), MongoDB (Chat Messages)
+	•	WebSockets: Real-time communication between users
+	•	Docker: Containerized deployment with PostgreSQL & MongoDB
+	•	Authentication: JWT-based authentication for secure API access
+	•	Caching (Optional): Redis for session tracking & WebSocket timeouts
