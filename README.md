@@ -1,7 +1,18 @@
-  /user-service (Go)
-  /product-service (Python)
-  /chat-service (Go)
-  /notification-service (Python)
+# Chat-Service
+
+Flow of User Actions
+	1.	User signs up → Stored in PostgreSQL.
+	2.	User searches for a friend → Query users table.
+	3.	User sends friend request → Insert into friendships table.
+	4.	Friend accepts request → Friendship updated in DB.
+	5.	User sends first message → WebSocket connection opens.
+	6.	Messages exchanged in real-time → Stored in MongoDB.
+	7.	If inactive for X minutes → WebSocket disconnects.
+	8.	User can retrieve chat history from MongoDB anytime.
+
+
+
+
 
 Real-Time Collaboration
 Tech Stack: Go, WebSockets, MongoDB
