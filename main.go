@@ -24,9 +24,12 @@ func main() {
 	// Initialize database connection
 	infra.InitDatabase()
 
+	// Create a new instance of a Gin router
 	server := gin.Default()
 
+	// Add user routes
 	endpoints.AddUserRoutes(server, version)
+	endpoints.AddFrienshipRoutes(server, version)
 
 	// Start the server
 	server.Run(":8080")

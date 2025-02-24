@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"chat-service/models"
 	"fmt"
 	"log"
 	"os"
@@ -33,6 +34,16 @@ func InitDatabase() {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+
+	db.AutoMigrate(&models.User{}, &models.Friendships{})
+
+	// Add indexes
+	// Ensures friendship pairs are unique regardless of order (A→B == B→A)
+	db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_friendships ON friendships (LEAST(user_id, friend_id), GREATEST(user_id, friend_id))`)
+	// User ID index
+	db.Exec("CREATE INDEX idx_user_id ON friendships (user_id)")
+	// Friend ID index
+	db.Exec("CREATE INDEX idx_friend_id ON friendships (friend_id)")
 
 	// Set up connection pool and other configurations
 	sqlDB, err := db.DB()

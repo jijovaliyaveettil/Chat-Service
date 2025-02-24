@@ -10,9 +10,12 @@ Flow of User Actions
 	7.	If inactive for X minutes → WebSocket disconnects.
 	8.	User can retrieve chat history from MongoDB anytime.
 
+WHAT IS A MIDDLEWARE ?
 
-
-
+Tasks to do:
+- User CRUD operations
+- Friendship system
+- Authentication
 
 Real-Time Collaboration
 Tech Stack: Go, WebSockets, MongoDB
