@@ -11,6 +11,8 @@ Flow of User Actions
 	8.	User can retrieve chat history from MongoDB anytime.
 
 WHAT IS A MIDDLEWARE ?
+// Use middleware like
+<!-- router.POST("/friends/:id", ratelimit.PerUser(10, time.Minute), SendFriendRequest) -->
 
 Tasks to do:
 - User CRUD operations

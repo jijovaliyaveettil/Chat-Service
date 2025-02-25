@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"chat-service/infra"
+	"chat-service/models"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -11,13 +13,30 @@ type FriendshipRequest struct {
 	Status string `json:"status" binding:"required,oneof=pending accepted rejected"`
 }
 
-func CreateFriendship(ctx *gin.Context) {
-	requesterID := getCurrentUserID(c)
-	targetID := uuid.Parse(c.Param("id"))
+func getCurrentUserID(ctx *gin.Context) string {
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		ctx.JSON(401, gin.H{"error": "Unauthorized"})
+		return ""
+	}
+	return userID.(string)
+}
 
-	friendship := Friendship{
+func CreateFriendship(ctx *gin.Context) {
+	requesterID := getCurrentUserID(ctx)
+
+	targetID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		fmt.Println("Invalid UUID:", err)
+		ctx.JSON(400, gin.H{"error": "Invalid UUID"})
+		return
+	}
+
+	var db = infra.DB
+
+	friendship := models.Friendships{
 		UserID:   requesterID,
-		FriendID: targetID,
+		FriendID: targetID.String(),
 		Status:   "pending",
 	}
 
@@ -30,13 +49,18 @@ func CreateFriendship(ctx *gin.Context) {
 }
 
 func UpdateFriendship(ctx *gin.Context) {
-	userID := getCurrentUserID(c)
-	requesterID := uuid.Parse(c.Param("id"))
+	userID := getCurrentUserID(ctx)
+	requesterID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		fmt.Println("Invalid UUID:", err)
+		ctx.JSON(400, gin.H{"error": "Invalid UUID"})
+		return
+	}
 
 	db := infra.DB
 
 	// Find the pending request
-	var friendship Friendship
+	var friendship models.Friendships
 	db.Where("user_id = ? AND friend_id = ? AND status = 'pending'",
 		requesterID, userID).
 		First(&friendship)
@@ -45,9 +69,9 @@ func UpdateFriendship(ctx *gin.Context) {
 	db.Model(&friendship).Update("status", "accepted")
 
 	// Create reciprocal relationship
-	reciprocal := Friendship{
+	reciprocal := models.Friendships{
 		UserID:   userID,
-		FriendID: requesterID,
+		FriendID: requesterID.String(),
 		Status:   "accepted",
 	}
 	db.Create(&reciprocal)
@@ -60,5 +84,5 @@ func GetFriendship(ctx *gin.Context) {
 }
 
 func DeleteFriendship(ctx *gin.Context) {
-	userId := ctx.Param("id")
+	// userId := ctx.Param("id")
 }

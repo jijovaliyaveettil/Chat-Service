@@ -13,9 +13,9 @@ type User struct {
 }
 
 type Friendships struct {
-	ID        uint   `gorm:"primaryKey"`
-	UserID    string `gorm:"type:uuid"`
-	FriendID  string `gorm:"type:uuid"`
+	ID        uint `gorm:"primaryKey"`
+	UserID    string
+	FriendID  string
 	Status    string `gorm:"size:20;check:status IN ('pending','accepted','rejected')"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
