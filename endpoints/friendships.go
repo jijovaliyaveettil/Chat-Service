@@ -7,7 +7,7 @@ import (
 )
 
 func AddFrienshipRoutes(server *gin.Engine, version string) {
-	a := server.Group("/friends")
+	a := server.Group("/friendships")
 	a.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"version": version,

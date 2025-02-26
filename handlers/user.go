@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -112,5 +114,40 @@ func DeleteUser(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{
 		"status": "ok",
 		"id":     userId,
+	})
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
+}
+
+func LoginUser(ctx *gin.Context) {
+	var req LoginRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user models.User
+
+	// Find user by email first
+	result := infra.DB.Where("email = ?", req.Email).First(&user)
+	if result.Error != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Verify password
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"user":   user,
 	})
 }

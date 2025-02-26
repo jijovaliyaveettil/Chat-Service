@@ -30,20 +30,22 @@ func InitDatabase() {
 		host, user, password, dbname, port)
 
 	// Open connection to PostgreSQL
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		// Add this to handle foreign key constraints
+		DisableForeignKeyConstraintWhenMigrating: false,
+	})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	db.AutoMigrate(&models.User{}, &models.Friendships{})
+	// Drop existing tables if they exist
+	// db.Migrator().DropTable(&models.Friendships{}, &models.User{})
 
-	// Add indexes
-	// Ensures friendship pairs are unique regardless of order (A→B == B→A)
-	db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_friendships ON friendships (LEAST(user_id, friend_id), GREATEST(user_id, friend_id))`)
-	// User ID index
-	db.Exec("CREATE INDEX idx_user_id ON friendships (user_id)")
-	// Friend ID index
-	db.Exec("CREATE INDEX idx_friend_id ON friendships (friend_id)")
+	// AutoMigrate with explicit foreign key configuration
+	err = db.AutoMigrate(&models.User{}, &models.Friendships{})
+	if err != nil {
+		log.Fatalf("Failed to auto-migrate database: %v", err)
+	}
 
 	// Set up connection pool and other configurations
 	sqlDB, err := db.DB()
@@ -51,8 +53,9 @@ func InitDatabase() {
 		log.Fatalf("Failed to get database connection: %v", err)
 	}
 
-	sqlDB.SetMaxOpenConns(25)
-	sqlDB.SetMaxIdleConns(25)
+	// Optional: Configure connection pool
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
 
 	DB = db
 	log.Println("Database connection successfully established")
