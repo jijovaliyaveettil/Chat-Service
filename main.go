@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"chat-service/endpoints"
-	"chat-service/infra"
+	"chat-service/initializers"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -22,7 +22,7 @@ func main() {
 	fmt.Println("Starting Server ........")
 
 	// Initialize database connection
-	infra.InitDatabase()
+	initializers.InitDatabase()
 
 	// Create a new instance of a Gin router
 	server := gin.Default()

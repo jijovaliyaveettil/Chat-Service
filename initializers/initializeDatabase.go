@@ -1,8 +1,7 @@
-package infra
+package initializers
 
 import (
 	"chat-service/models"
-	"fmt"
 	"log"
 	"os"
 
@@ -13,24 +12,16 @@ import (
 var DB *gorm.DB
 
 func InitDatabase() {
-	// Explicitly get environment variables
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
-	port := os.Getenv("DB_PORT")
 
-	// Validate required environment variables
-	if host == "" || user == "" || password == "" || dbname == "" || port == "" {
-		log.Fatal("Missing required database environment variables")
-	}
+	var err error
 
 	// Database connection parameters
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-		host, user, password, dbname, port)
+	// dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+	// 	host, user, password, dbname, port)
+	dsn := os.Getenv("DB_HOST") + " user=" + os.Getenv("DB_USER") + " password=" + os.Getenv("DB_PASSWORD") + " dbname=" + os.Getenv("DB_NAME") + " port=" + os.Getenv("DB_PORT") + " sslmode=disable TimeZone=UTC"
 
 	// Open connection to PostgreSQL
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		// Add this to handle foreign key constraints
 		DisableForeignKeyConstraintWhenMigrating: false,
 	})
@@ -42,13 +33,13 @@ func InitDatabase() {
 	// db.Migrator().DropTable(&models.Friendships{}, &models.User{})
 
 	// AutoMigrate with explicit foreign key configuration
-	err = db.AutoMigrate(&models.User{}, &models.Friendships{})
+	err = DB.AutoMigrate(&models.User{}, &models.Friendships{})
 	if err != nil {
 		log.Fatalf("Failed to auto-migrate database: %v", err)
 	}
 
 	// Set up connection pool and other configurations
-	sqlDB, err := db.DB()
+	sqlDB, err := DB.DB()
 	if err != nil {
 		log.Fatalf("Failed to get database connection: %v", err)
 	}
@@ -57,10 +48,6 @@ func InitDatabase() {
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
 
-	DB = db
+	DB = DB
 	log.Println("Database connection successfully established")
-}
-
-func GetDB() *gorm.DB {
-	return DB
 }
