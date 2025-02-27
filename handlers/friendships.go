@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"chat-service/infra"
+	"chat-service/initializers"
 	"chat-service/models"
 	"fmt"
 
@@ -32,7 +32,7 @@ func CreateFriendship(ctx *gin.Context) {
 		return
 	}
 
-	var db = infra.DB
+	var db = initializers.DB
 
 	friendship := models.Friendships{
 		UserID:   requesterID,
@@ -57,7 +57,7 @@ func UpdateFriendship(ctx *gin.Context) {
 		return
 	}
 
-	db := infra.DB
+	db := initializers.DB
 
 	// Find the pending request
 	var friendship models.Friendships

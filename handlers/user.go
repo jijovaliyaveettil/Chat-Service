@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"chat-service/infra"
+	"chat-service/initializers"
 	"chat-service/models"
 	"strings"
 	"time"
@@ -24,7 +24,7 @@ func CreateUser(ctx *gin.Context) {
 
 	var req UserRequest
 
-	db := infra.DB
+	db := initializers.DB
 
 	if err := ctx.ShouldBind(&req); err != nil {
 		ctx.JSON(400, gin.H{"error": err.Error()})
@@ -65,7 +65,7 @@ func CreateUser(ctx *gin.Context) {
 func GetUser(ctx *gin.Context) {
 	userId := ctx.Param("id")
 
-	db := infra.DB
+	db := initializers.DB
 
 	fetch_user := models.User{
 		Id: userId,
@@ -91,7 +91,7 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	db := infra.DB
+	db := initializers.DB
 
 	update_user := models.User{
 		Id: userId,
@@ -133,7 +133,7 @@ func LoginUser(ctx *gin.Context) {
 	var user models.User
 
 	// Find user by email first
-	result := infra.DB.Where("email = ?", req.Email).First(&user)
+	result := initializers.DB.Where("email = ?", req.Email).First(&user)
 	if result.Error != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return

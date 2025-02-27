@@ -2,6 +2,7 @@ package initializers
 
 import (
 	"chat-service/models"
+	"fmt"
 	"log"
 	"os"
 
@@ -15,10 +16,21 @@ func InitDatabase() {
 
 	var err error
 
+	// Explicitly get environment variables
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
+
+	// Validate required environment variables
+	if host == "" || user == "" || password == "" || dbname == "" || port == "" {
+		log.Fatal("Missing required database environment variables")
+	}
+
 	// Database connection parameters
-	// dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-	// 	host, user, password, dbname, port)
-	dsn := os.Getenv("DB_HOST") + " user=" + os.Getenv("DB_USER") + " password=" + os.Getenv("DB_PASSWORD") + " dbname=" + os.Getenv("DB_NAME") + " port=" + os.Getenv("DB_PORT") + " sslmode=disable TimeZone=UTC"
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+		host, user, password, dbname, port)
 
 	// Open connection to PostgreSQL
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
