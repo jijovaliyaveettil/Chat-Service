@@ -1,7 +1,8 @@
 package endpoints
 
 import (
-	"chat-service/handlers"
+	handlers "chat-service/handlers/user"
+	"chat-service/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,4 +20,5 @@ func AddUserRoutes(server *gin.Engine, version string) {
 	a.PUT("/update/:id", handlers.UpdateUser)
 	a.DELETE("/delete/:id", handlers.DeleteUser)
 	a.POST("/login", handlers.LoginUser)
+	a.GET("/validate", middleware.AuthMiddleware, handlers.Validate)
 }
