@@ -54,6 +54,7 @@ func LoginUser(ctx *gin.Context) {
 		return
 	}
 
+	// Set the SameSite and SameOrigin cookies
 	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie("Authorization", tokenString, 3600, "/", "", false, true)
 
@@ -64,8 +65,31 @@ func LoginUser(ctx *gin.Context) {
 	})
 }
 
+func getCurrentUserID(ctx *gin.Context) models.User {
+	user, exists := ctx.Get("user")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return models.User{}
+	}
+
+	// Type assert to models.User and get the Id
+	userModel, ok := user.(models.User)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user type"})
+		return models.User{}
+	}
+
+	return userModel
+}
+
 func Validate(ctx *gin.Context) {
-	ctx.JSON(200, gin.H{
+	user := getCurrentUserID(ctx)
+	if user.Id == "" {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
 		"message": "This is the validate",
+		"user":    user,
 	})
 }

@@ -20,5 +20,6 @@ func AddUserRoutes(server *gin.Engine, version string) {
 	a.PUT("/update/:id", handlers.UpdateUser)
 	a.DELETE("/delete/:id", handlers.DeleteUser)
 	a.POST("/login", handlers.LoginUser)
+	a.POST("/logout", handlers.LogoutUser)
 	a.GET("/validate", middleware.AuthMiddleware, handlers.Validate)
 }

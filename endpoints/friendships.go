@@ -1,7 +1,8 @@
 package endpoints
 
 import (
-	"chat-service/handlers"
+	handlers "chat-service/handlers/friendships"
+	"chat-service/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +15,8 @@ func AddFrienshipRoutes(server *gin.Engine, version string) {
 			"status":  "ok",
 		})
 	})
-	a.POST("/:id", handlers.CreateFriendship)
-	a.PUT("/:id", handlers.UpdateFriendship)
-	a.GET("/requests", handlers.GetFriendship)
-	a.DELETE("/:id", handlers.DeleteFriendship)
+	a.POST("/:id", middleware.AuthMiddleware, handlers.CreateFriendship)
+	a.PUT("/:id", middleware.AuthMiddleware, handlers.UpdateFriendship)
+	a.GET("/requests", middleware.AuthMiddleware, handlers.GetFriendship)
+	// a.DELETE("/:id", handlers.DeleteFriendship)
 }

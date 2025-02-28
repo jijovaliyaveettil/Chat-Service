@@ -11,12 +11,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// Get the cookie of request
-// Decode/validate it
-// check the exp
-// find the user exp
-// attach to request
-// continue
 func AuthMiddleware(ctx *gin.Context) {
 	// Get the token from the cookie
 	tokenString, err := ctx.Cookie("Authorization")
