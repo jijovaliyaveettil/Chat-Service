@@ -3,10 +3,10 @@ package handlers
 import (
 	"chat-service/initializers"
 	"chat-service/models"
-	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func UpdateFriendship(ctx *gin.Context) {
@@ -15,35 +15,43 @@ func UpdateFriendship(ctx *gin.Context) {
 		return
 	}
 
-	requesterID, err := uuid.Parse(ctx.Param("id"))
+	// Validate request payload
+	var request FriendshipRequest
+	if err := ctx.ShouldBind(&request); err != nil {
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate target friendship ID
+	friendshipID, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		fmt.Println("Invalid UUID:", err)
-		ctx.JSON(400, gin.H{"error": "Invalid UUID"})
+		ctx.JSON(400, gin.H{"error": "Invalid friendship ID"})
 		return
 	}
 
 	db := initializers.DB
 
-	// Find the pending request
+	// Find the friendship record
 	var friendship models.Friendships
-	db.Where("user_id = ? AND friend_id = ? AND status = 'pending'",
-		requesterID, user.Id).
-		First(&friendship)
-
-	if friendship.ID == 0 {
+	if err := db.First(&friendship, friendshipID).Error; err != nil {
 		ctx.JSON(404, gin.H{"error": "Friend request not found"})
 		return
 	}
-	// Update status
-	db.Model(&friendship).Update("status", "accepted")
 
-	// Create reciprocal relationship
-	reciprocal := models.Friendships{
-		UserID:   user.Id,
-		FriendID: requesterID.String(),
-		Status:   "accepted",
+	// Ensure that the logged-in user is the one receiving the request
+	if friendship.FriendID != user.Id {
+		ctx.JSON(403, gin.H{"error": "You are not authorized to respond to this request"})
+		return
 	}
-	db.Create(&reciprocal)
 
-	ctx.JSON(200, gin.H{"status": "accepted"})
+	// Update the status
+	friendship.Status = request.Status
+	friendship.UpdatedAt = time.Now()
+
+	if err := db.Save(&friendship).Error; err != nil {
+		ctx.JSON(500, gin.H{"error": "Failed to update friendship status"})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"message": "Friend request updated successfully", "status": request.Status})
 }

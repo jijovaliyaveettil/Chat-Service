@@ -17,6 +17,6 @@ func AddFrienshipRoutes(server *gin.Engine, version string) {
 	})
 	a.POST("/:id", middleware.AuthMiddleware, handlers.CreateFriendship)
 	a.PUT("/:id", middleware.AuthMiddleware, handlers.UpdateFriendship)
-	a.GET("/requests", middleware.AuthMiddleware, handlers.GetFriendship)
+	a.GET("/requests", middleware.AuthMiddleware, handlers.GetPendingFriendship)
 	// a.DELETE("/:id", handlers.DeleteFriendship)
 }
