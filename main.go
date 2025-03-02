@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"chat-service/endpoints"
+	handlers "chat-service/handlers"
 	"chat-service/initializers"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,8 @@ func main() {
 	// Add user routes
 	endpoints.AddUserRoutes(server, version)
 	endpoints.AddFrienshipRoutes(server, version)
+
+	server.GET("/ws", handlers.WebSocketHandler)
 
 	// Start the server
 	server.Run(":8080")
