@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type User struct {
 	Id          string  `gorm:"primaryKey;type:uuid"`
@@ -19,4 +23,18 @@ type Friendships struct {
 	Status    string `gorm:"size:20;check:status IN ('pending','accepted','rejected')"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type Chat struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	User1     string             `bson:"user1"`    // Sender ID
+	User2     string             `bson:"user2"`    // Receiver ID
+	Messages  []Message          `bson:"messages"` // Chat messages
+	CreatedAt time.Time          `bson:"created_at"`
+}
+
+type Message struct {
+	SenderID  string    `bson:"sender_id"`
+	Content   string    `bson:"content"`
+	Timestamp time.Time `bson:"timestamp"`
 }

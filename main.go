@@ -14,6 +14,7 @@ func init() {
 
 	initializers.LoadEnv()
 	initializers.InitDatabase()
+	initializers.ConnectMongo()
 }
 
 var version = "1.0.0"
