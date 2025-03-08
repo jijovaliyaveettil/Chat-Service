@@ -14,7 +14,7 @@ func init() {
 
 	initializers.LoadEnv()
 	initializers.InitDatabase()
-	initializers.ConnectMongo()
+	initializers.InitMongoDB()
 }
 
 var version = "1.0.0"
@@ -29,7 +29,7 @@ func main() {
 	endpoints.AddUserRoutes(server, version)
 	endpoints.AddFrienshipRoutes(server, version)
 
-	server.GET("/ws", handlers.WebSocketHandler)
+	server.GET("/chat", handlers.ChatHandler)
 
 	// Start the server
 	server.Run(":8080")

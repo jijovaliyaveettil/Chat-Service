@@ -4,32 +4,28 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// MongoDB connection instance
 var MongoDB *mongo.Database
 
-// ConnectMongo initializes MongoDB connection
-func ConnectMongo() {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+func InitMongoDB() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	// Connect to MongoDB
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
-		log.Fatal("MongoDB Connection Error:", err)
+		log.Fatal("MongoDB connection failed:", err)
 	}
 
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
+	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal("MongoDB Ping Error:", err)
+		log.Fatal("MongoDB ping failed:", err)
 	}
 
-	fmt.Println("✅ Connected to MongoDB")
-
-	// Select database
-	MongoDB = client.Database("chatapp")
+	MongoDB = client.Database("chat_service")
+	fmt.Println("Connected to MongoDB!")
 }
