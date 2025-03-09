@@ -25,6 +25,8 @@ func main() {
 	// Create a new instance of a Gin router
 	server := gin.Default()
 
+	server.StaticFile("/", "./index.html")
+
 	// Add user routes
 	endpoints.AddUserRoutes(server, version)
 	endpoints.AddFrienshipRoutes(server, version)
