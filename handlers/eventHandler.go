@@ -84,11 +84,26 @@ func ChatHandler(c *gin.Context) {
 	clientsMu.Unlock()
 
 	// Set up ping/pong mechanism
-	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
-	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
-		return nil
-	})
+	done := make(chan struct{})
+	defer close(done)
+
+	// Ping goroutine
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				if err := conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(10*time.Second)); err != nil {
+					log.Println("Ping failed:", err)
+					return
+				}
+			case <-done:
+				return
+			}
+		}
+	}()
 
 	// Cleanup on disconnect
 	defer func() {
@@ -101,31 +116,42 @@ func ChatHandler(c *gin.Context) {
 	for {
 		var msg ChatMessage
 
-		_, message, err := conn.ReadMessage()
+		// Set read deadline
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+
+		// Read message properly
+		messageType, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Printf("Read error: %v", err)
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("Client %s disconnected unexpectedly", currentUser)
+			}
 			break
 		}
 
-		log.Printf("Received message: %s", message)
-
-		if err := json.Unmarshal(message, &msg); err != nil {
-			log.Printf("JSON unmarshal error: %v", err)
+		// Only handle text messages
+		if messageType != websocket.TextMessage {
 			continue
 		}
 
-		if err := conn.ReadJSON(&msg); err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("Client %s disconnected unexpectedly", currentUser)
-			} else {
-				log.Printf("Read error: %v", err)
-			}
-			break
+		log.Printf("Received raw message: %s", message)
+
+		// Parse JSON
+		if err := json.Unmarshal(message, &msg); err != nil {
+			log.Printf("JSON unmarshal error: %v", err)
+			conn.WriteJSON(gin.H{"error": "Invalid message format"})
+			continue
+		}
+
+		// Validate message content
+		if msg.Content == "" || len(msg.Content) > 1000 {
+			conn.WriteJSON(gin.H{"error": "Message must be 1-1000 characters"})
+			continue
 		}
 
 		// Save to MongoDB
 		if err := saveMessage(currentUser, targetUser, msg.Content); err != nil {
 			log.Println("Database error:", err)
+			conn.WriteJSON(gin.H{"error": "Failed to save message"})
 			continue
 		}
 
